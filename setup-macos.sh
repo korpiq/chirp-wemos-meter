@@ -3,6 +3,7 @@
 set -e
 
 ARDUINO_CLI="/Applications/Arduino.app/Contents/MacOS/Arduino"
+ARDUINO_LIBDIR="${HOME}/Documents/Arduino/libraries"
 ESP8266_URL="http://arduino.esp8266.com/stable/package_esp8266com_index.json"
 BOARDS_PREF="boardsmanager.additional.urls"
 
@@ -41,6 +42,14 @@ install_ESP8266 () {
     $ARDUINO_CLI --install-boards esp8266:esp8266 --save-prefs
 }
 
+test_time_library () {
+    [ -d "$ARDUINO_LIBDIR/Time" ]
+}
+
+install_time_library () {
+    $ARDUINO_CLI --install-library Time
+}
+
 ensure_installed () {
     for STEP in "$@"
     do
@@ -57,5 +66,6 @@ ensure_installed () {
 
 ensure_installed \
     "Arduino for compiling and installing software" \
-    "ESP8266 Core for Arduino to support target hardware"
+    "ESP8266 Core for Arduino to support target hardware" \
+    "time_library for using actual time in communication"
 
