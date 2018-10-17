@@ -2,6 +2,7 @@
 
 set -e
 
+THIS_DIR=$(cd -- $(dirname "$BASH_SOURCE"); pwd)
 ARDUINO_CLI="/Applications/Arduino.app/Contents/MacOS/Arduino"
 ARDUINO_LIBDIR="${HOME}/Documents/Arduino/libraries"
 ESP8266_URL="http://arduino.esp8266.com/stable/package_esp8266com_index.json"
@@ -42,12 +43,33 @@ install_ESP8266 () {
     $ARDUINO_CLI --install-boards esp8266:esp8266 --save-prefs
 }
 
-test_time_library () {
-    [ -d "$ARDUINO_LIBDIR/Time" ]
+list_missing_libraries () {
+    sed -ne 's/:/ /gp' < "$THIS_DIR/arduino-libraries.txt" |
+    while read LIB VER REST
+    do
+        if [ -e "$ARDUINO_LIBDIR/$LIB/library.properties" ] &&
+            grep -q "version=$VER" "$ARDUINO_LIBDIR/$LIB/library.properties"
+        then
+            echo "Library already installed: $LIB:$VER" >&2
+        else
+            echo "Library to be installed: $LIB:$VER" >&2
+            echo "$LIB:$VER"
+        fi
+    done
 }
 
-install_time_library () {
-    $ARDUINO_CLI --install-library Time
+test_libraries () {
+    INSTALL_LIBS=$(list_missing_libraries) 2>&1
+
+    [ -z "$INSTALL_LIBS" ]
+}
+
+install_libraries () {
+    for LIB in $INSTALL_LIBS
+    do
+        echo "Installing library: $LIB"
+        $ARDUINO_CLI --install-library $LIB
+    done
 }
 
 ensure_installed () {
@@ -65,7 +87,7 @@ ensure_installed () {
 }
 
 ensure_installed \
-    "Arduino for compiling and installing software" \
+    "Arduino for compiling and installing the program" \
     "ESP8266 Core for Arduino to support target hardware" \
-    "time_library for using actual time in communication"
+    "libraries that provide features for the program"
 
