@@ -43,33 +43,46 @@ install_ESP8266 () {
     $ARDUINO_CLI --install-boards esp8266:esp8266 --save-prefs
 }
 
-list_missing_libraries () {
-    sed -ne 's/:/ /gp' < "$THIS_DIR/arduino-libraries.txt" |
-    while read LIB VER REST
+find_library () {
+    for FILE in "$ARDUINO_LIBDIR"/*/library.properties
     do
-        if [ -e "$ARDUINO_LIBDIR/$LIB/library.properties" ] &&
-            grep -q "version=$VER" "$ARDUINO_LIBDIR/$LIB/library.properties"
+        if grep -q "^name=$1$" < "$FILE" &&
+            grep -q "^version=$2" < "$FILE"
         then
-            echo "Library already installed: $LIB:$VER" >&2
-        else
-            echo "Library to be installed: $LIB:$VER" >&2
-            echo "$LIB:$VER"
+            dirname "$FILE"
+            return 0
         fi
     done
 }
 
+list_missing_libraries () {
+    cat "$THIS_DIR/arduino-libraries.txt" |
+    while IFS=: read LIB VER REST
+    do
+        echo -n "Library '$LIB' version $VER: " >&2
+        LIB_DIR=$(find_library "$LIB" "$VER")
+        if [ -n "$LIB_DIR" ]
+        then
+            echo "already installed at: $LIB_DIR" >&2
+        else
+            echo "will be installed." >&2
+            echo -n "$LIB:$VER,"
+        fi
+    done
+
+    echo ""
+}
+
 test_libraries () {
-    INSTALL_LIBS=$(list_missing_libraries) 2>&1
+    INSTALL_LIBS=$(list_missing_libraries | sed 's/,$//') 2>&1
 
     [ -z "$INSTALL_LIBS" ]
 }
 
 install_libraries () {
-    for LIB in $INSTALL_LIBS
-    do
-        echo "Installing library: $LIB"
-        $ARDUINO_CLI --install-library $LIB
-    done
+    echo "Installing libraries: $INSTALL_LIBS"
+
+    $ARDUINO_CLI --install-library "$INSTALL_LIBS"
 }
 
 ensure_installed () {
