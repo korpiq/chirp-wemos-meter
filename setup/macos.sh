@@ -56,7 +56,8 @@ find_library () {
 }
 
 list_missing_libraries () {
-    cat "$THIS_DIR/arduino-libraries.txt" |
+    sed 's/#.*//' "$THIS_DIR/arduino-libraries.txt" |
+    grep . |
     while IFS=: read LIB VER REST
     do
         echo -n "Library '$LIB' version $VER: " >&2
