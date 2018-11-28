@@ -8,3 +8,6 @@ Adafruit BME280 Library:1.0
 
 # Unused but required to compile current pile of source:
 Adafruit HTU21DF Library
+
+# New version
+WiFiManager:0.14
