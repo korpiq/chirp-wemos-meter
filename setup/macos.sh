@@ -43,6 +43,14 @@ install_ESP8266 () {
     $ARDUINO_CLI --install-boards esp8266:esp8266 --save-prefs
 }
 
+test_usb_driver () {
+    ls -d /{System,}/Library/Extensions/SiLabsUSBDriver*.kext 2>/dev/null | grep -q .
+}
+
+install_usb_driver () {
+    ensure_brew cask install homebrew/cask-drivers/silicon-labs-vcp-driver
+}
+
 find_library () {
     for FILE in "$ARDUINO_LIBDIR"/*/library.properties
     do
@@ -102,6 +110,7 @@ ensure_installed () {
 
 ensure_installed \
     "Arduino for compiling and installing the program" \
-    "ESP8266 Core for Arduino to support target hardware" \
+    "ESP8266 Core for Arduino to build for target hardware" \
+    "usb_driver to connect to target hardware" \
     "libraries that provide features for the program"
 
