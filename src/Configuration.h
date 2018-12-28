@@ -13,5 +13,11 @@ typedef struct configuration {
 
 extern configuration_t configuration;
 
-void setupConfiguration (configuration_t * configuration, char * const setup_wlan_name);
+void setupConfiguration (configuration_t * configuration, const char * setup_wlan_name);
+void reconfigure(configuration_t * configuration, const char * json);
 void reportConfiguration (configuration_t * configuration);
+
+#define PARAM_LEN 200
+#define PARAM_NAME_LEN 20
+#define NUM_PARAMS 1
+#define CONFIG_SIZE (PARAM_LEN + PARAM_NAME_LEN + 6) * NUM_PARAMS

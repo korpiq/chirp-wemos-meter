@@ -4,13 +4,8 @@ configuration_t configuration = {
     ""
 };
 
-char * const config_filename = "/config.json";
-char * const mqtt_server_url_name = "mqtt_server_url";
-
-#define PARAM_LEN 200
-#define PARAM_NAME_LEN 20
-#define NUM_PARAMS 1
-#define CONFIG_SIZE (PARAM_LEN + PARAM_NAME_LEN + 6) * NUM_PARAMS
+const char * config_filename = "/config.json";
+const char * mqtt_server_url_name = "mqtt_server_url";
 
 StaticJsonBuffer<CONFIG_SIZE> json_buffer;
 
@@ -59,7 +54,7 @@ void loadConfiguration (configuration_t * configuration)
     }
 }
 
-void setupWifi (configuration_t * configuration, char * const setup_wlan_name)
+void setupWifi (configuration_t * configuration, const char * setup_wlan_name)
 {
     WiFiManagerParameter mqtt_server_parameter(mqtt_server_url_name, "MQTT Server", configuration->mqtt_server_url, PARAM_LEN);
     wifiManager.addParameter(&mqtt_server_parameter);
@@ -73,7 +68,7 @@ void setupWifi (configuration_t * configuration, char * const setup_wlan_name)
     }
 }
 
-void setupConfiguration (configuration_t * configuration, char * const setup_wlan_name)
+void setupConfiguration (configuration_t * configuration, const char * setup_wlan_name)
 {
     if (SPIFFS.begin())
     {
@@ -85,6 +80,12 @@ void setupConfiguration (configuration_t * configuration, char * const setup_wla
     }
 
     setupWifi(configuration, setup_wlan_name);
+}
+
+void reconfigure(configuration_t * configuration, const char * json)
+{
+    JsonObject &jsonObject = json_buffer.parseObject(json, 0);
+    configuration->mqtt_server_url = jsonObject[mqtt_server_url_name];
 }
 
 void reportConfiguration (configuration_t * configuration)
