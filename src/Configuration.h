@@ -8,7 +8,7 @@
 #pragma once
 
 typedef struct configuration {
-    const char * mqtt_server_url;
+    char * mqtt_server_url;
 } configuration_t;
 
 extern configuration_t configuration;
