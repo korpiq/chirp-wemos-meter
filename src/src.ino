@@ -36,13 +36,16 @@ void setup ()
     blink(10, 400, 100);
     digitalWrite(LED, HIGH);
 
+    Serial.begin(115200);
+    Serial.println("Configure?");
+    report_memory();
+
     setupConfiguration(&configuration, "DEVICE_SETUP");
 
-    blink(10, 100, 100);
-
-    Serial.begin(115200);
-    Serial.println("Hello");
+    Serial.println("Configured.");
     report_memory();
+
+    blink(10, 100, 100);
 
     serialBegun = true;
 }
@@ -75,16 +78,25 @@ void loop ()
 
             char buffer[CONFIG_SIZE + 1];
             size_t buflen = Serial.readBytesUntil('\n', buffer, CONFIG_SIZE);
-            buffer[buflen] = 0;
-            Serial.print("reconfiguring: ");
-            Serial.println(buffer);
-            reconfigure(&configuration, buffer);
+            if (buflen > 2)
+            {
+                buffer[buflen] = 0;
+                Serial.print("reconfiguring: ");
+                Serial.println(buffer);
+                Serial.flush();
+                reconfigure(&configuration, buffer);
+            }
+            else
+            {
+                Serial.println("nop ok");
+                Serial.flush();
+            }
+
+            reportConfiguration(&configuration);
+            report_memory();
 
             blink(5, 100, 100);
         }
-
-        reportConfiguration(&configuration);
-        report_memory();
     }
 
     blink(1, 500, 500);

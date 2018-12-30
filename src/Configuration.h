@@ -9,6 +9,7 @@
 
 typedef struct configuration {
     char * mqtt_server_url;
+    bool configured;
 } configuration_t;
 
 extern configuration_t configuration;
