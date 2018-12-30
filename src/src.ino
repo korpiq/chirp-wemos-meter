@@ -1,6 +1,11 @@
 #include "Arduino.h"
 #include "Configuration.h"
 
+extern "C" {
+#include "user_interface.h"
+}
+
+
 #define LED 2
 
 bool serialBegun = false;
@@ -17,6 +22,14 @@ void blink (uint8_t times, uint16_t hi, uint16_t lo)
     }
 }
 
+void report_memory()
+{
+    uint32_t free = system_get_free_heap_size();
+    Serial.print("Free memory: ");
+    Serial.println(free);
+    Serial.flush();
+}
+
 void setup ()
 {
     pinMode(LED, OUTPUT);
@@ -29,7 +42,8 @@ void setup ()
 
     Serial.begin(115200);
     Serial.println("Hello");
-    Serial.flush();
+    report_memory();
+
     serialBegun = true;
 }
 
@@ -70,9 +84,8 @@ void loop ()
         }
 
         reportConfiguration(&configuration);
-        Serial.flush();
+        report_memory();
     }
 
     blink(1, 500, 500);
 }
-
