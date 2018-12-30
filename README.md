@@ -18,3 +18,10 @@ Script `setup/macos.sh` contains commands to install everything necessary to bui
 4. Fill in requested information
     - name and password of the WLAN to use for access to Internet
     - address of MQTT server for uploading the metrics.
+
+## Usage
+
+You can listen in on the serial port for debug messages.
+    - Send a one-letter message to get configuration report.
+    - Send a JSON object to update configuration
+        - "mqtt_server_url": an unused string for now
