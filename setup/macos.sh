@@ -4,7 +4,9 @@ set -e
 
 THIS_DIR=$(cd -- $(dirname "$BASH_SOURCE"); pwd)
 ARDUINO_CLI="/Applications/Arduino.app/Contents/MacOS/Arduino"
-ARDUINO_LIBDIR="${HOME}/Documents/Arduino/libraries"
+ARDUINO_DIR="${HOME}/Documents/Arduino"
+ARDUINO_LIBDIR="${ARDUINO_DIR}/libraries"
+ARDUINO_TOOLDIR="${ARDUINO_DIR}/tools"
 ESP8266_URL="http://arduino.esp8266.com/stable/package_esp8266com_index.json"
 BOARDS_PREF="boardsmanager.additional.urls"
 
@@ -94,6 +96,26 @@ install_libraries () {
     $ARDUINO_CLI --install-library "$INSTALL_LIBS"
 }
 
+test_device_filesystem_browser () {
+    [ -f "${ARDUINO_TOOLDIR}/ESP8266FS/tool/esp8266fs.jar" ]
+}
+
+install_device_filesystem_browser () {
+    # from https://www.instructables.com/id/Using-ESP8266-SPIFFS/
+
+    (
+        mkdir -p "${ARDUINO_TOOLDIR}"
+        cd "${ARDUINO_TOOLDIR}"
+        pwd
+        VERSION="0.3.0"
+        ZIP="ESP8266FS-$VERSION.zip"
+        URL="https://github.com/esp8266/arduino-esp8266fs-plugin/releases/download/$VERSION/$ZIP"
+        curl -fsSLO "$URL"
+        unzip -uo "$ZIP"
+        rm "$ZIP"
+    )
+}
+
 ensure_installed () {
     for STEP in "$@"
     do
@@ -112,5 +134,5 @@ ensure_installed \
     "Arduino for compiling and installing the program" \
     "ESP8266 Core for Arduino to build for target hardware" \
     "usb_driver to connect to target hardware" \
-    "libraries that provide features for the program"
-
+    "libraries that provide features for the program" \
+    "device_filesystem_browser tool for Arduino IDE"
