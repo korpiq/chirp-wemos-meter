@@ -5,23 +5,32 @@ configuration_t configuration = {
     false
 };
 
-const char * config_filename = "/config.json";
+const char * config_filename = "settings.json";
 const char * mqtt_server_url_name = "mqtt_server_url";
 
 WiFiManager wifiManager;
 bool pleaseSaveConfig = false;
 
-void log(const char * message_part, ...)
+template <typename Arg>
+void log_append(Arg message)
 {
-    va_list arg;
+    Serial.print(" ");
+    Serial.print(message);
+}
 
-    Serial.printf("[%04d]", millis()/1000);
+template <typename Arg, typename... Args>
+void log_append(Arg message, Args... message_parts)
+{
+    Serial.print(" ");
+    Serial.print(message);
+    log_append(message_parts...);
+}
 
-    va_start(arg, message_part);
-    Serial.print(' ');
-    Serial.print(message_part);
-    va_end(arg);
-
+template <typename... Args>
+void log(Args... message_parts)
+{
+    Serial.printf("[%04lu]", millis()/1000);
+    log_append(message_parts...);
     Serial.println();
     Serial.flush();
 }
@@ -31,10 +40,10 @@ void saveConfigCallback ()
     pleaseSaveConfig = true;
 }
 
-char * copy_string_realloc_when_longer(char * target, const char * source)
+char * copy_string_realloc_when_longer(char * target, const char * source, size_t max_length)
 {
-    size_t source_size = source ? strlen(source) : 0;
-    size_t target_size = target ? strlen(target) : 0;
+    size_t source_size = source ? strnlen(source, max_length) : 0;
+    size_t target_size = target ? strnlen(target, max_length) : 0;
 
     if (source_size > target_size)
     {
@@ -43,7 +52,8 @@ char * copy_string_realloc_when_longer(char * target, const char * source)
 
     if (source && target)
     {
-        strncpy(target, source, source_size + 1);
+        strncpy(target, source, source_size);
+        target[source_size] = 0;
     }
 
     return target;
@@ -51,7 +61,7 @@ char * copy_string_realloc_when_longer(char * target, const char * source)
 
 void serializeConfiguration (const configuration_t * configuration, char * buffer, size_t bufsiz)
 {
-    StaticJsonBuffer<CONFIG_SIZE> json_buffer;
+    DynamicJsonBuffer json_buffer;
     JsonObject& json = json_buffer.createObject();
     json[mqtt_server_url_name] = configuration->mqtt_server_url;
 
@@ -62,14 +72,14 @@ void deserializeConfiguration(configuration_t * configuration, const char * json
 {
     log("Reading new configuration:", json);
 
-    StaticJsonBuffer<CONFIG_SIZE> json_buffer;
-    JsonObject &jsonObject = json_buffer.parseObject(json, 0);
+    DynamicJsonBuffer json_buffer;
+    JsonObject &jsonObject = json_buffer.parseObject(json);
 
     configuration->configured = jsonObject.success();
     if (configuration->configured)
     {
         configuration->mqtt_server_url =
-            copy_string_realloc_when_longer(configuration->mqtt_server_url, jsonObject[mqtt_server_url_name]);
+            copy_string_realloc_when_longer(configuration->mqtt_server_url, jsonObject[mqtt_server_url_name], PARAM_LEN);
         log("Configuration ok:", json);
     }
     else
@@ -82,7 +92,7 @@ void saveConfiguration (configuration_t * configuration)
 {
     char buffer[CONFIG_SIZE];
     serializeConfiguration(configuration, buffer, CONFIG_SIZE);
-    log("Saving to file:", config_filename, "configuration:", buffer);
+    log("Saving configuration:", buffer);
 
     File f = SPIFFS.open(config_filename, "w");
     for (int i=0; i < CONFIG_SIZE && buffer[i]; ++i)
@@ -91,7 +101,7 @@ void saveConfiguration (configuration_t * configuration)
     }
     f.close();
 
-    log("Saving to file:", config_filename, "configuration:", buffer);
+    log("Saved to file:", config_filename);
 }
 
 void loadConfiguration (configuration_t * configuration)
@@ -102,12 +112,12 @@ void loadConfiguration (configuration_t * configuration)
     if (SPIFFS.exists(config_filename))
     {
         File f = SPIFFS.open(config_filename, "r");
-        log("Reading file");
+        log("Reading file:", config_filename);
 
         int config_string_length = f.readBytes(config_string, CONFIG_SIZE);
         f.close();
         config_string[config_string_length] = '\0';
-        log(config_string);
+        log("Read configuration:", config_string);
 
         deserializeConfiguration(configuration, config_string);
     }
@@ -131,7 +141,7 @@ void setupWifi (configuration_t * configuration, const char * setup_wlan_name)
     {
         log("Saving configuration given over setup WLAN");
         configuration->mqtt_server_url =
-            copy_string_realloc_when_longer(configuration->mqtt_server_url, mqtt_server_parameter.getValue());
+            copy_string_realloc_when_longer(configuration->mqtt_server_url, mqtt_server_parameter.getValue(), PARAM_LEN);
         configuration->configured = true;
 
         saveConfiguration(configuration);
@@ -163,6 +173,7 @@ void setupConfiguration (configuration_t * configuration, const char * setup_wla
 void reconfigure(configuration_t * configuration, const char * json)
 {
     deserializeConfiguration(configuration, json);
+    saveConfiguration(configuration);
 }
 
 void reportConfiguration (configuration_t * configuration)
