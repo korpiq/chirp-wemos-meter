@@ -173,7 +173,14 @@ void setupConfiguration (configuration_t * configuration, const char * setup_wla
 void reconfigure(configuration_t * configuration, const char * json)
 {
     deserializeConfiguration(configuration, json);
-    saveConfiguration(configuration);
+    if (configuration->configured)
+    {
+        saveConfiguration(configuration);
+    }
+    else
+    {
+        log("Configuration failed, not saved.");
+    }
 }
 
 void reportConfiguration (configuration_t * configuration)
