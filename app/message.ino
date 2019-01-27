@@ -69,16 +69,19 @@ void writeI2CRegister8bit(int addr, int value)
     Wire.endTransmission();
 }
 
-bool readMessage(int messageId, char *payload)
+void readMessage(char *payload)
 {
     float temperature = readTemperature() / 10;
     float moisture = (readMoisture() - 300) / 4;
     float light = (65535 - readLight()) / 65535 * 100;
+    char measurement_time[80];
+    const time_t current_time = time(NULL);
+    strftime(measurement_time, 80, "%FT%TZ", gmtime(&current_time));
     StaticJsonBuffer<MESSAGE_MAX_LEN> jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
+
     root["deviceId"] = DEVICE_ID;
-    root["messageId"] = messageId;
-    bool temperatureAlert = false;
+    root["measurementTime"] = measurement_time;
 
     // NAN is not the valid json, change it to NULL
     if (std::isnan(temperature))
@@ -88,10 +91,6 @@ bool readMessage(int messageId, char *payload)
     else
     {
         root["temperature"] = temperature;
-        if (temperature > TEMPERATURE_ALERT)
-        {
-            temperatureAlert = true;
-        }
     }
 
     if (std::isnan(moisture))
@@ -112,7 +111,6 @@ bool readMessage(int messageId, char *payload)
         root["light"] = light;
     }
     root.printTo(payload, MESSAGE_MAX_LEN);
-    return temperatureAlert;
 }
 
 void parseTwinMessage(char *message)

@@ -6,7 +6,7 @@
 #define POWER_PIN D8
 
 // Deep sleep seconds, if 0 no sleep // 900;  // 1h 3600;
-#define DSSECONDS 0
+#define DSSECONDS 10
 
 #define TEMPERATURE_ALERT 30
 

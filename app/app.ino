@@ -22,7 +22,8 @@ static char *ssid;
 static char *pass;
 
 static int interval = INTERVAL;
-static int dsseconds = DSSECONDS;
+
+unsigned long enterDeepSleepAfterSeconds = 0;
 
 void blinkLED()
 {
@@ -53,32 +54,31 @@ void initTime()
     }
 }
 
-static IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle;
+static IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle = NULL;
 void setup()
 {
     pinMode(LED_PIN, OUTPUT);
     pinMode(POWER_PIN, OUTPUT);
 
     initSerial();
-    delay(2000);
     setupConfiguration(&configuration, "DEVICE_SETUP");
 
     initTime();
     initSensor();
 
-    /*
-     * AzureIotHub library remove AzureIoTHubClient class in 1.0.34, so we remove the code below to avoid
-     *    compile error
-    */
+    reportConfiguration(&configuration);
 
-    // initIoThubClient();
-    iotHubClientHandle = IoTHubClient_LL_CreateFromConnectionString(configuration.mqtt_server_url, MQTT_Protocol);
-    if (iotHubClientHandle == NULL)
+    while (iotHubClientHandle == NULL)
     {
-        Serial.println("Failed on IoTHubClient_CreateFromConnectionString."); 
-        reportConfiguration(&configuration);
-        while (1)
-            ;
+        reconfigure_via_serial();
+        iotHubClientHandle = IoTHubClient_LL_CreateFromConnectionString(configuration.mqtt_server_url, MQTT_Protocol);
+
+        if (iotHubClientHandle == NULL)
+        {
+            Serial.println("Failed on IoTHubClient_CreateFromConnectionString.");
+            reportConfiguration(&configuration);
+            delay(interval);
+        }
     }
 
     IoTHubClient_LL_SetOption(iotHubClientHandle, "product_info", "ttwemos");
@@ -87,29 +87,54 @@ void setup()
     IoTHubClient_LL_SetDeviceTwinCallback(iotHubClientHandle, twinCallback, NULL);
 }
 
-static int messageCount = 1;
+void reconfigure_via_serial()
+{
+    if (Serial && Serial.available())
+    {
+        char new_configuration_json[CONFIG_SIZE + 1];
+        Serial.readBytesUntil('\n', new_configuration_json, CONFIG_SIZE);
+        reconfigure(&configuration, new_configuration_json);
+        reportConfiguration(&configuration);
+    }
+}
+
 void loop()
 {
-
     if (!messagePending && messageSending)
     {
         char messagePayload[MESSAGE_MAX_LEN];
-        bool temperatureAlert = readMessage(messageCount, messagePayload);
-        sendMessage(iotHubClientHandle, messagePayload, temperatureAlert);
-        messageCount++;
-        if (dsseconds > 0)
+        readMessage(messagePayload);
+        sendMessage(iotHubClientHandle, messagePayload);
+
+        if (configuration.sleep_seconds > 0)
         {
-            delay(interval);
-            IoTHubClient_LL_DoWork(iotHubClientHandle);
-            delay(interval);
-            WiFi.mode(WIFI_OFF);
-            ESP.deepSleep(1000000 * dsseconds, WAKE_RF_DEFAULT);
+            if (!enterDeepSleepAfterSeconds)
+                enterDeepSleepAfterSeconds = configuration.stay_awake_seconds;
         }
         else
         {
-            delay(interval);
+            Serial.println("Sleep time not set, will not sleep.");
         }
     }
+
     IoTHubClient_LL_DoWork(iotHubClientHandle);
-    delay(10);
+    delay(interval);
+
+    reconfigure_via_serial();
+
+    if (enterDeepSleepAfterSeconds)
+    {
+        --enterDeepSleepAfterSeconds;
+        Serial.print("Time is now ");
+        Serial.print(millis());
+        Serial.print("; will sleep in ");
+        Serial.println(enterDeepSleepAfterSeconds);
+
+        if (!enterDeepSleepAfterSeconds)
+        {
+            Serial.println("Will sleep now.");
+            WiFi.mode(WIFI_OFF);
+            ESP.deepSleep(1000000 * configuration.sleep_seconds, WAKE_RF_DEFAULT);
+        }
+    }
 }

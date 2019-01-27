@@ -1,11 +1,16 @@
 #include "Configuration.h"
 
 configuration_t configuration = {
-    (char *)"",
-    false};
+    (char *)"", // mqtt_server_url
+    0,          // sleep_seconds
+    10,         // stay_awake_seconds
+    false       // are we configured yet?
+};
 
 const char *config_filename = "settings.json";
 const char *mqtt_server_url_name = "mqtt_server_url";
+const char *sleep_seconds_name = "sleep_seconds";
+const char *stay_awake_seconds_name = "stay_awake_seconds";
 
 WiFiManager wifiManager;
 bool pleaseSaveConfig = false;
@@ -39,6 +44,8 @@ void serializeConfiguration(const configuration_t *configuration, char *buffer, 
     DynamicJsonBuffer json_buffer;
     JsonObject &json = json_buffer.createObject();
     json[mqtt_server_url_name] = configuration->mqtt_server_url;
+    json[sleep_seconds_name] = configuration->sleep_seconds;
+    json[stay_awake_seconds_name] = configuration->stay_awake_seconds;
 
     json.printTo(buffer, bufsiz);
 }
@@ -54,6 +61,20 @@ void deserializeConfiguration(configuration_t *configuration, const char *json)
     {
         configuration->mqtt_server_url =
             copy_string_realloc_when_longer(configuration->mqtt_server_url, jsonObject[mqtt_server_url_name], PARAM_LEN);
+
+        if (jsonObject.containsKey(sleep_seconds_name))
+        {
+            configuration->sleep_seconds = jsonObject[sleep_seconds_name];
+        }
+
+        if (jsonObject.containsKey(stay_awake_seconds_name))
+        {
+            configuration->stay_awake_seconds = jsonObject[stay_awake_seconds_name];
+            if (configuration->stay_awake_seconds < 10)
+            {
+                configuration->stay_awake_seconds = 10;
+            }
+        }
     }
 }
 
