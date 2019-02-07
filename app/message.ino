@@ -72,7 +72,7 @@ void writeI2CRegister8bit(int addr, int value)
 void readMessage(char *payload)
 {
     float temperature = readTemperature() / 10;
-    float moisture = (readMoisture() - 300) / 4;
+    float moisture = readMoisture(); //(readMoisture() - 300) / 4;
     float light = (65535 - readLight()) / 65535 * 100;
     char measurement_time[80];
     const time_t current_time = time(NULL);
