@@ -16,6 +16,7 @@
 
 static bool messagePending = false;
 static bool messageSending = true;
+bool mqtt = false;
 
 static int interval = INTERVAL;
 
@@ -64,23 +65,26 @@ void setup()
 
     reportConfiguration(&configuration);
 
-    while (iotHubClientHandle == NULL)
+    if (mqtt)
     {
-        reconfigure_via_serial();
-        iotHubClientHandle = IoTHubClient_LL_CreateFromConnectionString(configuration.mqtt_server_url, MQTT_Protocol);
-
-        if (iotHubClientHandle == NULL)
-        {
-            Serial.println("Failed on IoTHubClient_CreateFromConnectionString.");
-            reportConfiguration(&configuration);
-            delay(interval);
-        }
+      while (iotHubClientHandle == NULL)
+      {
+          reconfigure_via_serial();
+          iotHubClientHandle = IoTHubClient_LL_CreateFromConnectionString(configuration.mqtt_server_url, MQTT_Protocol);
+  
+          if (iotHubClientHandle == NULL)
+          {
+              Serial.println("Failed on IoTHubClient_CreateFromConnectionString.");
+              reportConfiguration(&configuration);
+              delay(interval);
+          }
+      }
+  
+      IoTHubClient_LL_SetOption(iotHubClientHandle, "product_info", "ttwemos");
+      IoTHubClient_LL_SetMessageCallback(iotHubClientHandle, receiveMessageCallback, NULL);
+      IoTHubClient_LL_SetDeviceMethodCallback(iotHubClientHandle, deviceMethodCallback, NULL);
+      IoTHubClient_LL_SetDeviceTwinCallback(iotHubClientHandle, twinCallback, NULL);
     }
-
-    IoTHubClient_LL_SetOption(iotHubClientHandle, "product_info", "ttwemos");
-    IoTHubClient_LL_SetMessageCallback(iotHubClientHandle, receiveMessageCallback, NULL);
-    IoTHubClient_LL_SetDeviceMethodCallback(iotHubClientHandle, deviceMethodCallback, NULL);
-    IoTHubClient_LL_SetDeviceTwinCallback(iotHubClientHandle, twinCallback, NULL);
 }
 
 void reconfigure_via_serial()
@@ -96,24 +100,28 @@ void reconfigure_via_serial()
 
 void loop()
 {
-    if (!messagePending && messageSending)
+    if (mqtt)
     {
-        char messagePayload[MESSAGE_MAX_LEN];
-        readMessage(messagePayload);
-        sendMessage(iotHubClientHandle, messagePayload);
+        if (!messagePending && messageSending)
+        {
+            char messagePayload[MESSAGE_MAX_LEN];
+            readMessage(messagePayload);
+            sendMessage(iotHubClientHandle, messagePayload);
 
-        if (configuration.sleep_seconds > 0)
-        {
-            if (!enterDeepSleepAfterSeconds)
-                enterDeepSleepAfterSeconds = configuration.stay_awake_seconds;
+            if (configuration.sleep_seconds > 0)
+            {
+                if (!enterDeepSleepAfterSeconds)
+                    enterDeepSleepAfterSeconds = configuration.stay_awake_seconds;
+            }
+            else
+            {
+                Serial.println("Sleep time not set, will not sleep.");
+            }
         }
-        else
-        {
-            Serial.println("Sleep time not set, will not sleep.");
-        }
+
+        IoTHubClient_LL_DoWork(iotHubClientHandle);
     }
 
-    IoTHubClient_LL_DoWork(iotHubClientHandle);
     delay(interval);
 
     reconfigure_via_serial();
