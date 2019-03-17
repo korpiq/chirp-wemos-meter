@@ -2,6 +2,7 @@
 
 configuration_t configuration = {
     (char *)"", // mqtt_server_url
+    (char *)"", // pump_actuator_url
     0,          // sleep_seconds
     10,         // stay_awake_seconds
     false       // are we configured yet?
@@ -9,6 +10,7 @@ configuration_t configuration = {
 
 const char *config_filename = "settings.json";
 const char *mqtt_server_url_name = "mqtt_server_url";
+const char *pump_actuator_url_name = "pump_actuator_url";
 const char *sleep_seconds_name = "sleep_seconds";
 const char *stay_awake_seconds_name = "stay_awake_seconds";
 
@@ -44,6 +46,7 @@ void serializeConfiguration(const configuration_t *configuration, char *buffer, 
     DynamicJsonBuffer json_buffer;
     JsonObject &json = json_buffer.createObject();
     json[mqtt_server_url_name] = configuration->mqtt_server_url;
+    json[pump_actuator_url_name] = configuration->pump_actuator_url;
     json[sleep_seconds_name] = configuration->sleep_seconds;
     json[stay_awake_seconds_name] = configuration->stay_awake_seconds;
 
@@ -59,8 +62,17 @@ void deserializeConfiguration(configuration_t *configuration, const char *json)
     configuration->configured = jsonObject.success();
     if (configuration->configured)
     {
-        configuration->mqtt_server_url =
-            copy_string_realloc_when_longer(configuration->mqtt_server_url, jsonObject[mqtt_server_url_name], PARAM_LEN);
+        if (jsonObject.containsKey(mqtt_server_url_name))
+        {
+            configuration->mqtt_server_url =
+                copy_string_realloc_when_longer(configuration->mqtt_server_url, jsonObject[mqtt_server_url_name], PARAM_LEN);
+        }
+
+        if (jsonObject.containsKey(pump_actuator_url_name))
+        {
+            configuration->pump_actuator_url =
+                copy_string_realloc_when_longer(configuration->mqtt_server_url, jsonObject[pump_actuator_url_name], PARAM_LEN);
+        }
 
         if (jsonObject.containsKey(sleep_seconds_name))
         {
@@ -110,6 +122,8 @@ void setupWifi(configuration_t *configuration, const char *setup_wlan_name)
 {
     WiFiManagerParameter mqtt_server_parameter(mqtt_server_url_name, "MQTT Server", configuration->mqtt_server_url, PARAM_LEN);
     wifiManager.addParameter(&mqtt_server_parameter);
+    WiFiManagerParameter pump_actuator_parameter(pump_actuator_url_name, "Water pump", configuration->pump_actuator_url, PARAM_LEN);
+    wifiManager.addParameter(&pump_actuator_parameter);
     wifiManager.setSaveConfigCallback(saveConfigCallback);
 
     wifiManager.autoConnect(setup_wlan_name);
@@ -118,6 +132,8 @@ void setupWifi(configuration_t *configuration, const char *setup_wlan_name)
     {
         configuration->mqtt_server_url =
             copy_string_realloc_when_longer(configuration->mqtt_server_url, mqtt_server_parameter.getValue(), PARAM_LEN);
+        configuration->pump_actuator_url =
+            copy_string_realloc_when_longer(configuration->pump_actuator_url, pump_actuator_parameter.getValue(), PARAM_LEN);
         configuration->configured = true;
 
         saveConfiguration(configuration);

@@ -10,6 +10,7 @@
 typedef struct configuration
 {
     char *mqtt_server_url;
+    char *pump_actuator_url;
     unsigned int sleep_seconds;
     unsigned int stay_awake_seconds;
     bool configured;
@@ -23,5 +24,5 @@ void reportConfiguration(configuration_t *configuration);
 
 #define PARAM_LEN 200
 #define PARAM_NAME_LEN 20
-#define NUM_PARAMS 1
+#define NUM_PARAMS 4
 #define CONFIG_SIZE (PARAM_LEN + PARAM_NAME_LEN + 6) * NUM_PARAMS

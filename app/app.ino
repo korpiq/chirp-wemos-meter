@@ -17,10 +17,6 @@
 static bool messagePending = false;
 static bool messageSending = true;
 
-static char *connectionString;
-static char *ssid;
-static char *pass;
-
 static int interval = INTERVAL;
 
 unsigned long enterDeepSleepAfterSeconds = 0;
