@@ -11,3 +11,6 @@ Adafruit HTU21DF Library
 
 # New version
 WiFiManager:0.14
+
+AzureIoTHub:1.0.45
+AzureIoTHubMQTTClient:0.2.3
