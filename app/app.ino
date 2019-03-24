@@ -6,7 +6,6 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 #include <WiFiUdp.h>
-
 #include <AzureIoTHub.h>
 #include <AzureIoTProtocol_MQTT.h>
 #include <AzureIoTUtility.h>

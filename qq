@@ -1,0 +1,159 @@
+[33mcommit d8d09a35e290ce106a81d61ab1147c822463f40f[m
+Author: Tero Toivola <tero.toivola@pm.me>
+Date:   Thu Feb 7 19:54:56 2019 +0200
+
+    aqtuator test code
+
+[33mcommit 32617fb71cb4405f2d94799bd28f53a84b87d0ee[m
+Author: Tero Toivola <tero.toivola@pm.me>
+Date:   Sun Jan 27 20:16:05 2019 +0200
+
+    Deep sleep, measurement time
+    
+    Added deep sleep feature and measurement time to message. Removed Temperature alert.
+
+[33mcommit d6794a7b131a3ff9b1f5aeada251c5bfe4cf217b[m
+Author: Tero Toivola <tero.toivola@pm.me>
+Date:   Wed Jan 9 19:30:05 2019 +0200
+
+    IoT hub device reading
+    
+    should work...
+
+[33mcommit bec0ab016d40d98b4d87a8673d5889af234ee1db[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Tue Jan 1 22:00:42 2019 +0200
+
+    Save only after successful reconfiguration.
+
+[33mcommit 19432c4d5a7ac98d5fc2a05973c6705186194428[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Tue Jan 1 21:29:10 2019 +0200
+
+    Fixed JSON parsing by allowing nested object. Save configuration file when reconfigured. Logging with proper template functions.
+
+[33mcommit aec08adacbeb60a3d263ce2de2ed643281b39a15[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Mon Dec 31 12:12:38 2018 +0200
+
+    Added Chilicorn support logo and some layout fixes.
+
+[33mcommit a5782468d7bd7a64c1b2a8dc53548a558a75d4c4[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Sun Dec 30 23:52:25 2018 +0200
+
+    More detailed setup instructions, including led blinking information
+
+[33mcommit a8a8c3a7432a634bb21846fb5c3b17704cf27d2c[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Sun Dec 30 23:45:30 2018 +0200
+
+    Added usage instructions.
+
+[33mcommit 231d67f5610298103b806e931a66a9488b292b24[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Sun Dec 30 23:45:07 2018 +0200
+
+    Added lots of debugging to see what takes time and goes wrong.
+
+[33mcommit 58e89cfade5ce733a825c8ec228c9e4594c37df9[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Sun Dec 30 23:42:44 2018 +0200
+
+    Added esp8266fs tool for Arduino IDE for uploading filesystem contents.
+
+[33mcommit d6d9a066e858eb2e87ecde268137030bcb3dcb30[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Sun Dec 30 16:44:35 2018 +0200
+
+    Copy strings when configuring in failed attempt to stabilise it.
+
+[33mcommit cbd7d20dc11c0fdff2035eaea2abe968fc0044de[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Sun Dec 30 16:42:29 2018 +0200
+
+    report memory usage
+
+[33mcommit 1f8b5a8b6d0dcc87a3d8e3393f7abee7216875b7[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Sun Dec 30 16:41:58 2018 +0200
+
+    Exacted one setup step instruction.
+
+[33mcommit edbb9465ff17408629a8544495e16552abab4cca[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Fri Dec 28 21:52:29 2018 +0200
+
+    Renamed Main as src because Arduino IDE demanded. Initial dumb program to allow reconfiguration over Serial. Does not work very long.
+
+[33mcommit 843eb72d61115338ab7d4f080e331671a9724775[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Fri Dec 28 21:49:30 2018 +0200
+
+    Added reconfigure. Use const char. Define configuration size in header file.
+
+[33mcommit f8a8d74f84c4f36cdd2e59ab180e3154c7ee8926[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Tue Dec 11 22:16:22 2018 +0200
+
+    set serial speed to 115200
+
+[33mcommit 49b9a3b8c5d91a3fa9e1a291b9e83fef850facb3[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Tue Dec 11 22:16:07 2018 +0200
+
+    fix README layout
+
+[33mcommit 276e3c5847b95de0db56f1c351d69116024db5b0[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Tue Dec 11 21:39:27 2018 +0200
+
+    Initial implementation of WLAN and configuration saving.
+
+[33mcommit 88e5a30b8a55fbe3b9823881ee02b3ac65cdb171[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Wed Nov 28 18:43:18 2018 +0200
+
+    Added version 0.14 of WiFiManager for ESP8266
+
+[33mcommit e1c2a53bacb6f349bec4f2355e862c332b941fb2[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Wed Nov 28 18:42:38 2018 +0200
+
+    Added installing Silicon Labs USB Driver for connecting to ESP8266 over USB
+
+[33mcommit 71d4271d4efae435d8c9821ec18df4d5a248ae81[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Thu Oct 18 17:52:16 2018 +0300
+
+    Added an unused library to make compile succeed.
+
+[33mcommit d7c09a4a8d754bb7099696eca2a94e95965afd2a[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Thu Oct 18 17:51:37 2018 +0300
+
+    Explained in README what is the software we compile
+
+[33mcommit 57d9ef3c631b7d7038416b3c5e5a5a2b9ef8c909[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Thu Oct 18 12:06:48 2018 +0300
+
+    Install all known required libraries with correct names.
+
+[33mcommit 2c9a7ccb4e01dddff05e024c44aef4c16e72c62f[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Thu Oct 18 00:46:26 2018 +0300
+
+    Added installation of multiple required libraries from a configuration file.
+
+[33mcommit ab298e201cc8edfc8f28a771985bc7ec01384692[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Thu Oct 18 00:22:09 2018 +0300
+
+    Added installation of Time library.
+
+[33mcommit 12061f847d3dbf6a2136d96ef577ad66dfeed6b1[m
+Author: Kalle Hallivuori <kalle.hallivuori@futurice.com>
+Date:   Wed Oct 17 22:57:54 2018 +0300
+
+    initial commit of preliminary setup on MacOS
