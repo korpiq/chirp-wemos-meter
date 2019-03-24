@@ -7,16 +7,12 @@
 #include <WiFiClientSecure.h>
 #include <WiFiUdp.h>
 
-#include <AzureIoTHub.h>
-#include <AzureIoTProtocol_MQTT.h>
-#include <AzureIoTUtility.h>
+#include "iothubClient.h"
 #include "Configuration.h"
 
 #include "config.h"
 
-static bool messagePending = false;
-static bool messageSending = true;
-bool mqtt = false;
+bool iotHubStarted = false;
 
 static int interval = INTERVAL;
 
@@ -51,7 +47,6 @@ void initTime()
     }
 }
 
-static IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle = NULL;
 void setup()
 {
     pinMode(LED_PIN, OUTPUT);
@@ -64,27 +59,6 @@ void setup()
     initSensor();
 
     reportConfiguration(&configuration);
-
-    if (mqtt)
-    {
-      while (iotHubClientHandle == NULL)
-      {
-          reconfigure_via_serial();
-          iotHubClientHandle = IoTHubClient_LL_CreateFromConnectionString(configuration.mqtt_server_url, MQTT_Protocol);
-  
-          if (iotHubClientHandle == NULL)
-          {
-              Serial.println("Failed on IoTHubClient_CreateFromConnectionString.");
-              reportConfiguration(&configuration);
-              delay(interval);
-          }
-      }
-  
-      IoTHubClient_LL_SetOption(iotHubClientHandle, "product_info", "ttwemos");
-      IoTHubClient_LL_SetMessageCallback(iotHubClientHandle, receiveMessageCallback, NULL);
-      IoTHubClient_LL_SetDeviceMethodCallback(iotHubClientHandle, deviceMethodCallback, NULL);
-      IoTHubClient_LL_SetDeviceTwinCallback(iotHubClientHandle, twinCallback, NULL);
-    }
 }
 
 void reconfigure_via_serial()
@@ -93,14 +67,27 @@ void reconfigure_via_serial()
     {
         char new_configuration_json[CONFIG_SIZE + 1];
         Serial.readBytesUntil('\n', new_configuration_json, CONFIG_SIZE);
-        reconfigure(&configuration, new_configuration_json);
-        reportConfiguration(&configuration);
+        if (strnlen(new_configuration_json, 3) > 2)
+        {
+            reconfigure(&configuration, new_configuration_json);
+            reportConfiguration(&configuration);
+
+            const char * result = setupIotHub(configuration.mqtt_server_url);
+            if (result == NULL)
+            {
+                iotHubStarted = true;
+            }
+            else
+            {
+                Serial.println(result);
+            }
+        }
     }
 }
 
 void loop()
 {
-    if (mqtt)
+    if (iotHubStarted)
     {
         if (!messagePending && messageSending)
         {

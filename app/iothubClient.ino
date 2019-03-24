@@ -1,8 +1,8 @@
-#include <AzureIoTHub.h>
 #include <AzureIoTProtocol_MQTT.h>
 #include <AzureIoTUtility.h>
+#include "iothubClient.h"
 
-static WiFiClientSecure sslClient; // for ESP8266
+// static WiFiClientSecure sslClient; // for ESP8266
 
 const char *onSuccess = "\"Successfully invoke device method\"";
 const char *notFound = "\"No method found\"";
@@ -32,6 +32,23 @@ const char *notFound = "\"No method found\"";
  * }
  * #endif
  */
+
+static IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle = NULL;
+
+const char * setupIotHub(const char * mqtt_server_url) {
+    iotHubClientHandle = IoTHubClient_LL_CreateFromConnectionString(mqtt_server_url, MQTT_Protocol);
+    if (iotHubClientHandle == NULL)
+    {
+        return "Failed to connect to IoTHub";
+    }
+  
+    IoTHubClient_LL_SetOption(iotHubClientHandle, "product_info", "ttwemos");
+    IoTHubClient_LL_SetMessageCallback(iotHubClientHandle, receiveMessageCallback, NULL);
+    IoTHubClient_LL_SetDeviceMethodCallback(iotHubClientHandle, deviceMethodCallback, NULL);
+    IoTHubClient_LL_SetDeviceTwinCallback(iotHubClientHandle, twinCallback, NULL);
+
+    return NULL;
+}
 
 static void sendCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *userContextCallback)
 {
